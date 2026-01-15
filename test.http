@@ -1,5 +1,5 @@
 ### Test chat API
-POST http://18.222.183.116/chat
+POST http://18.222.183.116:3000/chat
 Content-Type: application/json
 
 {
