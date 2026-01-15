@@ -14,18 +14,29 @@ function getNextService(){
     return service;
 }
 
-
 const server = Bun.serve({
   port: process.env.PORT ?? 3000,
-  hostname: "0.0.0.0", // 🔹 CAMBIO IMPORTANTE
+  hostname: "0.0.0.0", // 🔹 necesario para Traefik/Coolify
   async fetch(req) {
     const { pathname } = new URL(req.url);
     if (req.method === 'POST' && pathname === '/chat') {
         
         const { messages } = await req.json() as { messages: ChatMessage[] };
+
+        // 🔹 Generar un ID único para esta request
+        const requestId = crypto.randomUUID();
+        console.log(`[${requestId}] Recibida petición con ${messages.length} mensajes`);
+
         const service = getNextService();
 
+        // 🔹 Medir latencia
+        const start = performance.now();
         const stream = await service?.chat(messages);
+        const end = performance.now();
+
+        console.log(`[${requestId}] Servicio usado: ${service?.name}, tiempo: ${(end - start).toFixed(2)}ms`);
+
+
 
         return new Response(stream, {
             headers: {
