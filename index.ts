@@ -20,11 +20,20 @@ const server = Bun.serve({
   async fetch(req) {
     const { pathname } = new URL(req.url);
     if (req.method === 'POST' && pathname === '/chat') {
+        const requestId = crypto.randomUUID(); // 🔑 ID único
+        const start = performance.now();       // ⏱ inicio
+        
         const { messages } = await req.json() as { messages: ChatMessage[] };
         const service = getNextService();
 
-        console.log(`Using service: ${service?.name}`);
+        console.log(`[${requestId}] Using service: ${service?.name}`);
+
         const stream = await service?.chat(messages);
+
+        const end = performance.now();         // ⏱ fin
+        console.log(
+          `[${requestId}] ${service?.name} took ${(end - start).toFixed(2)} ms`
+        );
 
         return new Response(stream, {
             headers: {
